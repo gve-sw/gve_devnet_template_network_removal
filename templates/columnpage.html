@@ -1,0 +1,129 @@
+<!-- Template page: offers three sections to visualize a 3 steps workflow.-->
+
+{% extends "masterPage.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Rail -->
+    <div class="col-xl-3 col-md-4">
+        <div class="section" >
+            <div class="panel panel--loose panel--raised base-margin-bottom">
+                <h2 class="subtitle">Step 1: Choose organization and network </h2>
+                    <div class="section"> 
+                            <form action="/select_organization" method="POST" >
+                                <div class="form-group base-margin-bottom">
+                                    <div class="form-group__text select">
+                                            <select name="organization_id" id='organization_id' required>
+                                                <option disabled selected hidden value="0">Please choose...</option>
+                                                {% for org in organizations %}<option value="{{org.id}}" {% if selected_organization.id == org.id %} selected {% endif %}>{{org.name}} (ID:{{org.id}})</option>{% endfor %}
+                                            </select>
+                                        <label for="organization_id">Organization*</label>
+                                    </div>
+                                </div>
+                                <span class="required-label pull-right">* required fields</span>
+                                <br>
+                                <div class="flex-fluid" style="text-align: right;">
+                                    <input name="submit_button" class="btn btn-primary" type="submit" id="submit_netw_org" value="Search" style="display:inline" onclick="loading_network_organization()">
+                                </div>
+                                <div class="loader loader--small" aria-label="Loading, please wait..." id="loading_netw_org" style="display:none">
+                                    <div class="wrapper">
+                                        <div class="wheel" style="width:20px;height:20px;"></div>
+                                    </div>
+                                </div>
+                            </form>
+                    </div> 
+                    
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Rail -->
+    <div class="col-xl-6 col-md-4">
+        <div class="section" {% if not networks %} hidden {% endif %}>
+            <div class="panel panel--loose panel--raised base-margin-bottom">
+                <h2 class="subtitle">Step 2: Select network(s)</h2>
+                <div class="section">
+                    <form action="/select_networks" method="POST" >
+                    <div class="responsive-table">
+                        <table class="table table--lined table--selectable table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <label class="checkbox">
+                                            <input type="checkbox" onClick="toggle(this)">
+                                            <span class="checkbox__input"></span>
+                                        </label>
+                                    </th>
+                                    <th class="text-center">Name</th>
+                                    <th class="text-center">ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for network in networks %}
+                                    <tr>
+                                        <td>
+                                            <label class="checkbox">
+                                                <input type="checkbox" name="network_id" value="{{network['id']}}">
+                                                <span class="checkbox__input"></span>
+                                            </label>
+                                        </td>
+                                        <td class="text-center"> {{network['name']}} </td>
+                                        <td class="text-center"> {{network['id']}} </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>                                                                    
+                </div>   
+            </div>            
+        </div>
+    </div>
+    <!-- Right Rail -->
+    <div class="col-xl-3 col-md-4">
+        <div class="section" {% if not networks %} hidden {% endif %}>
+            <div class="panel panel--loose panel--raised base-margin-bottom">
+                <h2 class="subtitle">Step 3: Remove networks from template</h2> 
+                <div class="flex-fluid" style="text-align: center;">
+                    <input name="submit_button" class="btn btn-primary" type="submit" value="Remove" onclick="$('#loader_branch').show();">
+                </div>  
+            </form>  
+            </div>
+        </div>
+        <div class="section" {% if not unbound_networks and not failed_unbound_networks %} hidden {% endif %}>
+            <div class="panel panel--loose panel--raised base-margin-bottom">
+                <h2 class="subtitle">Summary</h2>
+                <br>
+                {% for network in unbound_networks %}
+                <div class="toast base-margin-bottom">
+                    <div class="toast__icon text-success icon-check-outline"></div>
+                    <div class="toast__body">
+                        <div class="toast__title">Successfully Unbound Network</div>
+                        <div class="toast__message">We have successfully unbound the network with network ID {{network}} </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% for network in failed_unbound_networks %}
+                <div class="toast base-margin-bottom">
+                    <div class="toast__icon text-danger icon-error-outline"></div>
+                    <div class="toast__body">
+                        <div class="toast__title">Unsuccessfully Unbound Network</div>
+                        <div class="toast__message">We have unsuccessfully unbound the network with network ID {{network[0]}} due to the following error: {{network[1]}} </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{%  endblock %}
+
+{% block script %}
+<script>
+    function toggle(source) {
+        checkboxes = document.getElementsByName('network_id');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+</script>
+{% endblock %}
